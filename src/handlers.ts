@@ -590,4 +590,89 @@ export class Handlers {
       );
     }
   }
+
+  async handleUpdateRelease(request: any) {
+    const { reference, fields } = request.params.arguments as {
+      reference: string;
+      fields: { [key: string]: any };
+    };
+
+    if (!reference) {
+      throw new McpError(
+        ErrorCode.InvalidParams,
+        "Release reference number is required (e.g., ACTIVATION-R-14)"
+      );
+    }
+
+    if (!fields || Object.keys(fields).length === 0) {
+      throw new McpError(
+        ErrorCode.InvalidParams,
+        "Fields object is required with at least one field to update"
+      );
+    }
+
+    try {
+      const payload: { [key: string]: any } = {
+        release: {
+          ...fields,
+        }
+      };
+
+      const response = await fetch(
+        `https://${AHA_DOMAIN}.aha.io/api/v1/releases/${reference}`,
+        {
+          method: 'PUT',
+          headers: {
+            Authorization: `Bearer ${AHA_API_TOKEN}`,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!response.ok) {
+        const errorBody = await response.text();
+        throw new Error(`REST API error: ${response.status} ${response.statusText} - ${errorBody}`);
+      }
+
+      const data = await response.json();
+
+      // Format the response with useful fields
+      const release = data.release;
+      const formattedRelease = {
+        reference_num: release.reference_num,
+        name: release.name,
+        start_date: release.start_date,
+        release_date: release.release_date,
+        development_started_on: release.development_started_on,
+        parking_lot: release.parking_lot,
+        url: release.url,
+      };
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              message: "Release updated successfully",
+              release: formattedRelease,
+            }, null, 2),
+          },
+        ],
+      };
+    } catch (error) {
+      if (error instanceof McpError) {
+        throw error;
+      }
+
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      console.error("API Error:", errorMessage);
+      throw new McpError(
+        ErrorCode.InternalError,
+        `Failed to update release: ${errorMessage}`
+      );
+    }
+  }
 }

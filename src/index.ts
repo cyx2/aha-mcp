@@ -192,6 +192,24 @@ class AhaMcp {
             required: ["workspacePrefix"],
           },
         },
+        {
+          name: "update_release",
+          description: "Update a release's fields. Date format: YYYY-MM-DD",
+          inputSchema: {
+            type: "object",
+            properties: {
+              reference: {
+                type: "string",
+                description: "Release reference number (e.g., ACTIVATION-R-14)",
+              },
+              fields: {
+                type: "object",
+                description: "Object containing field keys and values to update. Supported fields: name, owner (email or ID), initiatives (array), workflow_status, theme (HTML allowed), start_date, end_date, release_date, development_started_on, external_release_date, external_release_date_resolution (sync|exact|week|month|quarter|half|year), parking_lot (boolean), capacity_units (time|story_points), capacity, progress_source, progress, duration_source. Dates must be in YYYY-MM-DD format.",
+              },
+            },
+            required: ["reference", "fields"],
+          },
+        },
       ],
     }));
 
@@ -212,6 +230,8 @@ class AhaMcp {
         return this.handlers.handleUpdateFeature(request);
       } else if (request.params.name === "list_releases") {
         return this.handlers.handleListReleases(request);
+      } else if (request.params.name === "update_release") {
+        return this.handlers.handleUpdateRelease(request);
       }
 
       throw new McpError(
