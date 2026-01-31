@@ -174,6 +174,24 @@ class AhaMcp {
             required: ["reference", "fields"],
           },
         },
+        {
+          name: "list_releases",
+          description: "List releases for a workspace/product. Can optionally filter by release name.",
+          inputSchema: {
+            type: "object",
+            properties: {
+              workspacePrefix: {
+                type: "string",
+                description: "Workspace/product reference prefix (e.g., ACT, ACTIVATION, DEVELOP)",
+              },
+              name: {
+                type: "string",
+                description: "Optional release name to filter by (case-insensitive partial match, e.g., 'FY2027Q2')",
+              },
+            },
+            required: ["workspacePrefix"],
+          },
+        },
       ],
     }));
 
@@ -192,6 +210,8 @@ class AhaMcp {
         return this.handlers.handleListFeaturesInRelease(request);
       } else if (request.params.name === "update_feature") {
         return this.handlers.handleUpdateFeature(request);
+      } else if (request.params.name === "list_releases") {
+        return this.handlers.handleListReleases(request);
       }
 
       throw new McpError(

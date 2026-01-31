@@ -442,4 +442,136 @@ export class Handlers {
       );
     }
   }
+
+  async handleListReleases(request: any) {
+    const { workspacePrefix, name } = request.params.arguments as {
+      workspacePrefix: string;
+      name?: string;
+    };
+
+    if (!workspacePrefix) {
+      throw new McpError(
+        ErrorCode.InvalidParams,
+        "Workspace prefix is required (e.g., ACT, ACTIVATION, DEVELOP)"
+      );
+    }
+
+    try {
+      // First, find the product by its reference prefix
+      const productsResponse = await fetch(
+        `https://${AHA_DOMAIN}.aha.io/api/v1/products`,
+        {
+          headers: {
+            Authorization: `Bearer ${AHA_API_TOKEN}`,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+        }
+      );
+
+      if (!productsResponse.ok) {
+        throw new Error(`REST API error: ${productsResponse.status} ${productsResponse.statusText}`);
+      }
+
+      const productsData = await productsResponse.json();
+      
+      // Find the product matching the workspace prefix (case-insensitive)
+      const product = productsData.products?.find((p: any) => 
+        p.reference_prefix?.toLowerCase() === workspacePrefix.toLowerCase()
+      );
+
+      if (!product) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `No workspace found with prefix "${workspacePrefix}". Available workspaces: ${productsData.products?.map((p: any) => p.reference_prefix).join(", ") || "none"}`,
+            },
+          ],
+        };
+      }
+
+      // Now fetch all releases for this product
+      const allReleases: any[] = [];
+      let currentPage = 1;
+      let totalPages = 1;
+
+      while (currentPage <= totalPages) {
+        const releasesResponse = await fetch(
+          `https://${AHA_DOMAIN}.aha.io/api/v1/products/${product.id}/releases?page=${currentPage}&per_page=100`,
+          {
+            headers: {
+              Authorization: `Bearer ${AHA_API_TOKEN}`,
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+          }
+        );
+
+        if (!releasesResponse.ok) {
+          throw new Error(`REST API error: ${releasesResponse.status} ${releasesResponse.statusText}`);
+        }
+
+        const releasesData = await releasesResponse.json();
+        
+        if (releasesData.releases) {
+          allReleases.push(...releasesData.releases);
+        }
+
+        if (releasesData.pagination) {
+          totalPages = releasesData.pagination.total_pages || 1;
+        }
+
+        currentPage++;
+      }
+
+      // Filter by name if provided (case-insensitive partial match)
+      let filteredReleases = allReleases;
+      if (name) {
+        const searchName = name.toLowerCase();
+        filteredReleases = allReleases.filter((r: any) => 
+          r.name?.toLowerCase().includes(searchName)
+        );
+      }
+
+      // Format the response with useful fields
+      const formattedReleases = filteredReleases.map((r: any) => ({
+        reference_num: r.reference_num,
+        name: r.name,
+        start_date: r.start_date,
+        release_date: r.release_date,
+        parking_lot: r.parking_lot,
+        url: r.url,
+      }));
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              workspace: {
+                prefix: product.reference_prefix,
+                name: product.name,
+                id: product.id,
+              },
+              total_count: formattedReleases.length,
+              releases: formattedReleases,
+            }, null, 2),
+          },
+        ],
+      };
+    } catch (error) {
+      if (error instanceof McpError) {
+        throw error;
+      }
+
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      console.error("API Error:", errorMessage);
+      throw new McpError(
+        ErrorCode.InternalError,
+        `Failed to list releases: ${errorMessage}`
+      );
+    }
+  }
 }

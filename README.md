@@ -151,13 +151,13 @@ Retrieves an Aha! feature or requirement by reference number.
 
 **Parameters:**
 
-- `reference` (required): Reference number of the feature or requirement (e.g., "DEVELOP-123")
+- `reference` (required): Reference number of the feature or requirement (e.g., "PROJECT-123")
 
 **Example:**
 
 ```json
 {
-  "reference": "DEVELOP-123"
+  "reference": "PROJECT-123"
 }
 ```
 
@@ -165,7 +165,7 @@ Retrieves an Aha! feature or requirement by reference number.
 
 ```json
 {
-  "reference_num": "DEVELOP-123",
+  "reference_num": "PROJECT-123",
   "name": "Feature name",
   "description": "Feature description",
   "workflow_status": {
@@ -265,13 +265,13 @@ Get an Aha! feature using the REST API. This is useful for debugging custom fiel
 
 **Parameters:**
 
-- `reference` (required): Feature reference number (e.g., "DEVELOP-123")
+- `reference` (required): Feature reference number (e.g., "PROJECT-123")
 
 **Example:**
 
 ```json
 {
-  "reference": "DEVELOP-123"
+  "reference": "PROJECT-123"
 }
 ```
 
@@ -285,14 +285,14 @@ List all features in a release. Automatically paginates through all results.
 
 **Parameters:**
 
-- `releaseReference` (required): Release reference number (e.g., "ACT-R-14" or "ACTIVATION-R-14")
+- `releaseReference` (required): Release reference number (e.g., "PROJ-R-1" or "PROJECT-R-1")
 - `perPage` (optional): Number of features per page (default 100, max 200)
 
 **Example:**
 
 ```json
 {
-  "releaseReference": "ACTIVATION-R-14",
+  "releaseReference": "PROJECT-R-1",
   "perPage": 100
 }
 ```
@@ -304,7 +304,7 @@ List all features in a release. Automatically paginates through all results.
   "total_count": 25,
   "features": [
     {
-      "reference_num": "ACTIVATION-123",
+      "reference_num": "PROJECT-123",
       "name": "Feature name",
       "workflow_status": { "name": "In development" }
     }
@@ -318,7 +318,7 @@ Update a feature's fields including custom fields. Supports both standard Aha! f
 
 **Parameters:**
 
-- `reference` (required): Feature reference number (e.g., "ACTIVATION-59")
+- `reference` (required): Feature reference number (e.g., "PROJECT-59")
 - `fields` (required): Object containing field keys and values to update
 
 **Standard Fields:**
@@ -336,7 +336,7 @@ Custom fields use their API key (e.g., `go_live_date` for "Release target date")
 
 ```json
 {
-  "reference": "ACTIVATION-59",
+  "reference": "PROJECT-59",
   "fields": {
     "name": "Updated feature name",
     "due_date": "2025-03-15",
@@ -349,17 +349,60 @@ Custom fields use their API key (e.g., `go_live_date` for "Release target date")
 
 Returns the updated feature data.
 
+### 8. list_releases
+
+List releases for a workspace/product. Can optionally filter by release name.
+
+**Parameters:**
+
+- `workspacePrefix` (required): Workspace/product reference prefix (e.g., "PROJ", "PROJECT")
+- `name` (optional): Release name to filter by (case-insensitive partial match, e.g., "Q2-2025")
+
+**Example:**
+
+```json
+{
+  "workspacePrefix": "PROJ",
+  "name": "Q2-2025"
+}
+```
+
+**Response:**
+
+```json
+{
+  "workspace": {
+    "prefix": "PROJ",
+    "name": "My Project",
+    "id": "1234567890123456789"
+  },
+  "total_count": 1,
+  "releases": [
+    {
+      "reference_num": "PROJECT-R-1",
+      "name": "Q2-2025",
+      "start_date": "2025-04-01",
+      "release_date": "2025-06-30",
+      "parking_lot": false,
+      "url": "https://yourcompany.aha.io/releases/PROJECT-R-1"
+    }
+  ]
+}
+```
+
 ## Example Queries
 
-- "Get feature DEVELOP-123"
+- "Get feature PROJECT-123"
 - "Fetch the product roadmap page ABC-N-213"
 - "Search for pages about launch planning"
-- "Get requirement ADT-123-1"
+- "Get requirement ABC-123-1"
 - "Find all pages mentioning Q2 goals"
-- "List all features in release ACTIVATION-R-14"
-- "Update feature ACTIVATION-59 with a new due date of 2025-03-15"
+- "List all releases in the PROJ workspace"
+- "Find the Q2-2025 release in the My Project workspace"
+- "List all features in release PROJECT-R-1"
+- "Update feature PROJECT-59 with a new due date of 2025-03-15"
 - "What fields are available on features?"
-- "Get the raw REST data for feature DEVELOP-123 to see custom field keys"
+- "Get the raw REST data for feature PROJECT-123 to see custom field keys"
 
 ## Configuration Options
 
