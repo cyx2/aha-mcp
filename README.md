@@ -2,19 +2,20 @@
 
 > **Note**: This is a fork of [aha-develop/aha-mcp](https://github.com/aha-develop/aha-mcp) with additional features and bug fixes. This fork is not published to npm, so you must use a local build.
 
-Model Context Protocol (MCP) server for accessing Aha! records through the MCP. This integration enables seamless interaction with Aha! features, requirements, and pages directly through the Model Context Protocol.
+Model Context Protocol (MCP) server for accessing Aha! records through Cursor or Claude Desktop.
 
 ## Prerequisites
 
 - Node.js v20 or higher
 - npm (usually comes with Node.js)
 - An Aha! account with API access
+- [Cursor](https://cursor.com) or [Claude Desktop](https://claude.ai/download)
 
 ## Installation
 
 ```bash
-# Clone the repository
-git clone https://github.com/YOUR_USERNAME/aha-mcp.git
+# Clone this repository
+git clone https://github.com/cyx2/aha-mcp.git
 cd aha-mcp
 
 # Install dependencies
@@ -22,9 +23,6 @@ npm install
 
 # Build the project
 npm run build
-
-# Run the server
-npm run mcp-start
 ```
 
 ## Authentication Setup
@@ -43,79 +41,15 @@ This MCP server requires the following environment variables:
 - `AHA_API_TOKEN`: Your Aha! API token
 - `AHA_DOMAIN`: Your Aha! domain (e.g., yourcompany if you access aha at yourcompany.aha.io)
 
-## IDE Integration
+## Setup
 
-Since this fork requires a local build, you'll need to point your IDE to the built output. Replace `/path/to/aha-mcp` with the absolute path to your cloned repository.
+Since this fork requires a local build, you'll need to point your MCP client to the built output. Replace `/path/to/aha-mcp` with the absolute path to your cloned repository.
 
 ### Cursor
 
 1. Go to Cursor Settings > MCP
 2. Click + Add new Global MCP Server
 3. Add the following configuration:
-
-```json
-{
-  "mcpServers": {
-    "aha-mcp": {
-      "command": "node",
-      "args": ["/path/to/aha-mcp/build/index.js"],
-      "env": {
-        "AHA_API_TOKEN": "your-api-token",
-        "AHA_DOMAIN": "yourcompany"
-      }
-    }
-  }
-}
-```
-
-### VSCode
-
-Add this to your `.vscode/settings.json`:
-
-```json
-{
-  "mcp": {
-    "servers": {
-      "aha-mcp": {
-        "command": "node",
-        "args": ["/path/to/aha-mcp/build/index.js"],
-        "env": {
-          "AHA_API_TOKEN": "your-api-token",
-          "AHA_DOMAIN": "yourcompany"
-        }
-      }
-    }
-  }
-}
-```
-
-### Cline
-
-Add a configuration to your `cline_mcp_settings.json` via Cline MCP Server settings:
-
-```json
-{
-  "mcpServers": {
-    "aha-mcp": {
-      "command": "node",
-      "args": ["/path/to/aha-mcp/build/index.js"],
-      "env": {
-        "AHA_API_TOKEN": "your-api-token",
-        "AHA_DOMAIN": "yourcompany"
-      }
-    }
-  }
-}
-```
-
-### RooCode
-
-Open the MCP settings by either:
-
-- Clicking "Edit MCP Settings" in RooCode settings, or
-- Using the "RooCode: Open MCP Config" command in VS Code's command palette
-
-Then add:
 
 ```json
 {
@@ -150,6 +84,20 @@ Add a configuration to your `claude_desktop_config.json`:
   }
 }
 ```
+
+## Example Queries
+
+- "Get feature PROJECT-123"
+- "Fetch the product roadmap page ABC-N-213"
+- "Search for pages about launch planning"
+- "Get requirement ABC-123-1"
+- "Find all pages mentioning Q2 goals"
+- "List all releases in the PROJ workspace"
+- "Find the Q2-2025 release in the My Project workspace"
+- "List all features in release PROJECT-R-1"
+- "Update feature PROJECT-59 with a new due date of 2025-03-15"
+- "What fields are available on features?"
+- "Get the raw REST data for feature PROJECT-123 to see custom field keys"
 
 ## Available MCP Tools
 
@@ -397,20 +345,6 @@ List releases for a workspace/product. Can optionally filter by release name.
   ]
 }
 ```
-
-## Example Queries
-
-- "Get feature PROJECT-123"
-- "Fetch the product roadmap page ABC-N-213"
-- "Search for pages about launch planning"
-- "Get requirement ABC-123-1"
-- "Find all pages mentioning Q2 goals"
-- "List all releases in the PROJ workspace"
-- "Find the Q2-2025 release in the My Project workspace"
-- "List all features in release PROJECT-R-1"
-- "Update feature PROJECT-59 with a new due date of 2025-03-15"
-- "What fields are available on features?"
-- "Get the raw REST data for feature PROJECT-123 to see custom field keys"
 
 ## Configuration Options
 
