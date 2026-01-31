@@ -1,1 +1,37 @@
+# Build output
 build
+built/*
+/lib/
+
+# Dependencies
+node_modules/
+.node_modules/
+
+# IDE/Editor
+.cursor/
+.idea
+.settings
+**/.vs
+**/.vscode/*
+!**/.vscode/tasks.json
+!**/.vscode/settings.json
+!**/.vscode/launch.json
+!**/.vscode/extensions.json
+
+# OS
+**/.DS_Store
+
+# Logs
+yarn-error.log
+*v8.log
+
+# Cache
+.eslintcache
+
+# Test/Coverage
+coverage/
+
+# Editor swap files
+*.swp
+\#*\#
+.\#*
