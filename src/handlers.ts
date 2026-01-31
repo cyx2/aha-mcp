@@ -457,26 +457,42 @@ export class Handlers {
     }
 
     try {
-      // First, find the product by its reference prefix
-      const productsResponse = await fetch(
-        `https://${AHA_DOMAIN}.aha.io/api/v1/products`,
-        {
-          headers: {
-            Authorization: `Bearer ${AHA_API_TOKEN}`,
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
+      // First, find the product by its reference prefix (paginate through all products)
+      const allProducts: any[] = [];
+      let productsPage = 1;
+      let productsTotalPages = 1;
+
+      while (productsPage <= productsTotalPages) {
+        const productsResponse = await fetch(
+          `https://${AHA_DOMAIN}.aha.io/api/v1/products?page=${productsPage}&per_page=100`,
+          {
+            headers: {
+              Authorization: `Bearer ${AHA_API_TOKEN}`,
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+          }
+        );
+
+        if (!productsResponse.ok) {
+          throw new Error(`REST API error: ${productsResponse.status} ${productsResponse.statusText}`);
         }
-      );
 
-      if (!productsResponse.ok) {
-        throw new Error(`REST API error: ${productsResponse.status} ${productsResponse.statusText}`);
+        const productsData = await productsResponse.json();
+        
+        if (productsData.products) {
+          allProducts.push(...productsData.products);
+        }
+
+        if (productsData.pagination) {
+          productsTotalPages = productsData.pagination.total_pages || 1;
+        }
+
+        productsPage++;
       }
-
-      const productsData = await productsResponse.json();
       
       // Find the product matching the workspace prefix (case-insensitive)
-      const product = productsData.products?.find((p: any) => 
+      const product = allProducts.find((p: any) => 
         p.reference_prefix?.toLowerCase() === workspacePrefix.toLowerCase()
       );
 
@@ -485,7 +501,7 @@ export class Handlers {
           content: [
             {
               type: "text",
-              text: `No workspace found with prefix "${workspacePrefix}". Available workspaces: ${productsData.products?.map((p: any) => p.reference_prefix).join(", ") || "none"}`,
+              text: `No workspace found with prefix "${workspacePrefix}". Available workspaces: ${allProducts.map((p: any) => p.reference_prefix).join(", ") || "none"}`,
             },
           ],
         };
