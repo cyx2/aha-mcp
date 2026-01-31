@@ -1,5 +1,7 @@
 # aha-mcp
 
+> **Note**: This is a fork of [aha-develop/aha-mcp](https://github.com/aha-develop/aha-mcp) with additional features and bug fixes. This fork is not published to npm, so you must use a local build.
+
 Model Context Protocol (MCP) server for accessing Aha! records through the MCP. This integration enables seamless interaction with Aha! features, requirements, and pages directly through the Model Context Protocol.
 
 ## Prerequisites
@@ -10,21 +12,16 @@ Model Context Protocol (MCP) server for accessing Aha! records through the MCP. 
 
 ## Installation
 
-### Using npx
-
-```bash
-npx -y aha-mcp@latest
-```
-
-### Manual Installation
-
 ```bash
 # Clone the repository
-git clone https://github.com/aha-develop/aha-mcp.git
+git clone https://github.com/YOUR_USERNAME/aha-mcp.git
 cd aha-mcp
 
 # Install dependencies
 npm install
+
+# Build the project
+npm run build
 
 # Run the server
 npm run mcp-start
@@ -48,43 +45,45 @@ This MCP server requires the following environment variables:
 
 ## IDE Integration
 
-For security reasons, we recommend using your preferred secure method for managing environment variables rather than storing API tokens directly in editor configurations. Each editor has different security models and capabilities for handling sensitive information.
+Since this fork requires a local build, you'll need to point your IDE to the built output. Replace `/path/to/aha-mcp` with the absolute path to your cloned repository.
 
-Below are examples of how to configure various editors to use the aha-mcp server. You should adapt these examples to use your preferred secure method for providing the required environment variables.
+### Cursor
 
-### VSCode
-
-The instructions below were copied from the instructions [found here](https://code.visualstudio.com/docs/copilot/chat/mcp-servers#_add-an-mcp-server).
-
-Add this to your `.vscode/settings.json`, using your preferred method to securely provide the environment variables:
+1. Go to Cursor Settings > MCP
+2. Click + Add new Global MCP Server
+3. Add the following configuration:
 
 ```json
 {
-  "mcp": {
-    "servers": {
-      "aha-mcp": {
-        "command": "npx",
-        "args": ["-y", "aha-mcp"]
-        // Environment variables should be provided through your preferred secure method
+  "mcpServers": {
+    "aha-mcp": {
+      "command": "node",
+      "args": ["/path/to/aha-mcp/build/index.js"],
+      "env": {
+        "AHA_API_TOKEN": "your-api-token",
+        "AHA_DOMAIN": "yourcompany"
       }
     }
   }
 }
 ```
 
-### Cursor
+### VSCode
 
-1. Go to Cursor Settings > MCP
-2. Click + Add new Global MCP Server
-3. Add a configuration similar to:
+Add this to your `.vscode/settings.json`:
 
 ```json
 {
-  "mcpServers": {
-    "aha-mcp": {
-      "command": "npx",
-      "args": ["-y", "aha-mcp"]
-      // Environment variables should be provided through your preferred secure method
+  "mcp": {
+    "servers": {
+      "aha-mcp": {
+        "command": "node",
+        "args": ["/path/to/aha-mcp/build/index.js"],
+        "env": {
+          "AHA_API_TOKEN": "your-api-token",
+          "AHA_DOMAIN": "yourcompany"
+        }
+      }
     }
   }
 }
@@ -98,9 +97,12 @@ Add a configuration to your `cline_mcp_settings.json` via Cline MCP Server setti
 {
   "mcpServers": {
     "aha-mcp": {
-      "command": "npx",
-      "args": ["-y", "aha-mcp"]
-      // Environment variables should be provided through your preferred secure method
+      "command": "node",
+      "args": ["/path/to/aha-mcp/build/index.js"],
+      "env": {
+        "AHA_API_TOKEN": "your-api-token",
+        "AHA_DOMAIN": "yourcompany"
+      }
     }
   }
 }
@@ -119,9 +121,12 @@ Then add:
 {
   "mcpServers": {
     "aha-mcp": {
-      "command": "npx",
-      "args": ["-y", "aha-mcp"]
-      // Environment variables should be provided through your preferred secure method
+      "command": "node",
+      "args": ["/path/to/aha-mcp/build/index.js"],
+      "env": {
+        "AHA_API_TOKEN": "your-api-token",
+        "AHA_DOMAIN": "yourcompany"
+      }
     }
   }
 }
@@ -135,9 +140,12 @@ Add a configuration to your `claude_desktop_config.json`:
 {
   "mcpServers": {
     "aha-mcp": {
-      "command": "npx",
-      "args": ["-y", "aha-mcp"]
-      // Environment variables should be provided through your preferred secure method
+      "command": "node",
+      "args": ["/path/to/aha-mcp/build/index.js"],
+      "env": {
+        "AHA_API_TOKEN": "your-api-token",
+        "AHA_DOMAIN": "yourcompany"
+      }
     }
   }
 }
