@@ -14,7 +14,9 @@
     "build": "tsc && chmod +x build/index.js",
     "start": "node build/index.js",
     "mcp-start": "npm run build && npm run start",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "test": "NODE_OPTIONS='--experimental-vm-modules' jest",
+    "test:coverage": "NODE_OPTIONS='--experimental-vm-modules' jest --coverage"
   },
   "keywords": [
     "aha",
@@ -31,7 +33,10 @@
     "graphql-request": "^7.4.0"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/node": "^25.1.0",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.6",
     "typescript": "^5.9.3"
   }
 }
