@@ -114,6 +114,66 @@ class AhaMcp {
             required: ["query"],
           },
         },
+        {
+          name: "introspect_feature",
+          description: "Introspect the Feature type schema to see available fields",
+          inputSchema: {
+            type: "object",
+            properties: {},
+            required: [],
+          },
+        },
+        {
+          name: "get_record_rest",
+          description: "Get an Aha! feature using the REST API (for debugging custom fields)",
+          inputSchema: {
+            type: "object",
+            properties: {
+              reference: {
+                type: "string",
+                description: "Reference number (e.g., DEVELOP-123)",
+              },
+            },
+            required: ["reference"],
+          },
+        },
+        {
+          name: "list_features_in_release",
+          description: "List all features in a release",
+          inputSchema: {
+            type: "object",
+            properties: {
+              releaseReference: {
+                type: "string",
+                description: "Release reference number (e.g., ACT-R-14 or ACTIVATION-R-14)",
+              },
+              perPage: {
+                type: "number",
+                description: "Number of features per page (default 100, max 200)",
+                default: 100,
+              },
+            },
+            required: ["releaseReference"],
+          },
+        },
+        {
+          name: "update_feature",
+          description: "Update a feature's fields including custom fields. Custom fields use their API key (e.g., 'go_live_date' for Release target date). Date format: YYYY-MM-DD",
+          inputSchema: {
+            type: "object",
+            properties: {
+              reference: {
+                type: "string",
+                description: "Feature reference number (e.g., ACTIVATION-59)",
+              },
+              fields: {
+                type: "object",
+                description: "Object containing field keys and values to update. Standard fields: name, workflow_kind, workflow_status, release, description, assigned_to_user, tags, start_date, due_date, initiative, epic, progress_source, progress, team. Custom fields use their API key (e.g., go_live_date, release_stage). Dates must be in YYYY-MM-DD format.",
+              },
+            },
+            required: ["reference", "fields"],
+          },
+        },
       ],
     }));
 
@@ -124,6 +184,14 @@ class AhaMcp {
         return this.handlers.handleGetPage(request);
       } else if (request.params.name === "search_documents") {
         return this.handlers.handleSearchDocuments(request);
+      } else if (request.params.name === "introspect_feature") {
+        return this.handlers.handleIntrospectFeature();
+      } else if (request.params.name === "get_record_rest") {
+        return this.handlers.handleGetRecordRest(request);
+      } else if (request.params.name === "list_features_in_release") {
+        return this.handlers.handleListFeaturesInRelease(request);
+      } else if (request.params.name === "update_feature") {
+        return this.handlers.handleUpdateFeature(request);
       }
 
       throw new McpError(

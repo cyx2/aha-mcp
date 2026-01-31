@@ -241,6 +241,114 @@ Searches for Aha! documents.
 }
 ```
 
+### 4. introspect_feature
+
+Introspect the Feature type schema to see available fields. Useful for discovering what fields are available on features.
+
+**Parameters:**
+
+None required.
+
+**Example:**
+
+```json
+{}
+```
+
+**Response:**
+
+Returns the GraphQL schema information for the Feature type, including all available fields and their types.
+
+### 5. get_record_rest
+
+Get an Aha! feature using the REST API. This is useful for debugging custom fields, as the REST API returns the raw field data including custom field keys.
+
+**Parameters:**
+
+- `reference` (required): Feature reference number (e.g., "DEVELOP-123")
+
+**Example:**
+
+```json
+{
+  "reference": "DEVELOP-123"
+}
+```
+
+**Response:**
+
+Returns the full feature data from the REST API, including custom fields with their API keys.
+
+### 6. list_features_in_release
+
+List all features in a release. Automatically paginates through all results.
+
+**Parameters:**
+
+- `releaseReference` (required): Release reference number (e.g., "ACT-R-14" or "ACTIVATION-R-14")
+- `perPage` (optional): Number of features per page (default 100, max 200)
+
+**Example:**
+
+```json
+{
+  "releaseReference": "ACTIVATION-R-14",
+  "perPage": 100
+}
+```
+
+**Response:**
+
+```json
+{
+  "total_count": 25,
+  "features": [
+    {
+      "reference_num": "ACTIVATION-123",
+      "name": "Feature name",
+      "workflow_status": { "name": "In development" }
+    }
+  ]
+}
+```
+
+### 7. update_feature
+
+Update a feature's fields including custom fields. Supports both standard Aha! fields and custom fields.
+
+**Parameters:**
+
+- `reference` (required): Feature reference number (e.g., "ACTIVATION-59")
+- `fields` (required): Object containing field keys and values to update
+
+**Standard Fields:**
+
+- `name`, `workflow_kind`, `workflow_status`, `release`, `description`
+- `assigned_to_user`, `tags`, `start_date`, `due_date`
+- `initiative`, `epic`, `progress_source`, `progress`, `team`
+- `initial_estimate`, `detailed_estimate`, `remaining_estimate`
+
+**Custom Fields:**
+
+Custom fields use their API key (e.g., `go_live_date` for "Release target date"). Use `get_record_rest` or `introspect_feature` to discover custom field keys.
+
+**Example:**
+
+```json
+{
+  "reference": "ACTIVATION-59",
+  "fields": {
+    "name": "Updated feature name",
+    "due_date": "2025-03-15",
+    "go_live_date": "2025-04-01"
+  }
+}
+```
+
+**Response:**
+
+Returns the updated feature data.
+
 ## Example Queries
 
 - "Get feature DEVELOP-123"
@@ -248,6 +356,10 @@ Searches for Aha! documents.
 - "Search for pages about launch planning"
 - "Get requirement ADT-123-1"
 - "Find all pages mentioning Q2 goals"
+- "List all features in release ACTIVATION-R-14"
+- "Update feature ACTIVATION-59 with a new due date of 2025-03-15"
+- "What fields are available on features?"
+- "Get the raw REST data for feature DEVELOP-123 to see custom field keys"
 
 ## Configuration Options
 

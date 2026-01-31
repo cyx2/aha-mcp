@@ -1,10 +1,115 @@
 export interface Description {
-  htmlBody: string;
+  markdownBody?: string;
+  htmlBody?: string;
 }
 
-export interface Record {
+export interface User {
+  id: string;
   name: string;
-  description: Description;
+  email?: string;
+}
+
+export interface WorkflowStatus {
+  id: string;
+  name: string;
+  color?: string;
+  position?: number;
+}
+
+export interface Release {
+  id: string;
+  referenceNum: string;
+  name: string;
+  releaseDate?: string;
+  startOn?: string;
+  developmentStartedOn?: string;
+  customFieldValues?: CustomFieldValue[];
+}
+
+export interface Team {
+  id: string;
+  name: string;
+}
+
+export interface Project {
+  id: string;
+  referencePrefix?: string;
+  name: string;
+}
+
+export interface Initiative {
+  id: string;
+  referenceNum: string;
+  name: string;
+}
+
+export interface Epic {
+  id: string;
+  referenceNum: string;
+  name: string;
+}
+
+export interface Tag {
+  id: string;
+  name: string;
+  color?: string;
+}
+
+export interface Estimate {
+  text?: string;
+  value?: number;
+  units?: string;
+}
+
+export interface CustomFieldValue {
+  key: string;
+  value: any;
+}
+
+export interface RequirementSummary {
+  id: string;
+  referenceNum: string;
+  name: string;
+  workflowStatus?: {
+    name: string;
+  };
+}
+
+// Generic record that can hold any fields from the API
+export interface Record {
+  id?: string;
+  referenceNum?: string;
+  name: string;
+  createdAt?: string;
+  updatedAt?: string;
+  startDate?: string;
+  dueDate?: string;
+  position?: number;
+  score?: number;
+  progress?: number;
+  progressSource?: string;
+  description?: Description;
+  workflowStatus?: WorkflowStatus;
+  release?: Release;
+  assignedToUser?: User;
+  createdByUser?: User;
+  team?: Team;
+  project?: Project;
+  initiative?: Initiative;
+  epic?: Epic;
+  feature?: {
+    id: string;
+    referenceNum: string;
+    name: string;
+    release?: Release;
+  };
+  tags?: Tag[];
+  requirements?: RequirementSummary[];
+  originalEstimate?: Estimate;
+  remainingEstimate?: Estimate;
+  workDone?: Estimate;
+  customFieldValues?: CustomFieldValue[];
+  [key: string]: any; // Allow additional fields
 }
 
 export interface FeatureResponse {
@@ -17,15 +122,21 @@ export interface RequirementResponse {
 
 export interface PageResponse {
   page: {
+    id?: string;
+    referenceNum?: string;
     name: string;
-    description: Description;
-    children: Array<{
+    createdAt?: string;
+    updatedAt?: string;
+    description?: Description;
+    children?: Array<{
+      id?: string;
+      referenceNum?: string;
       name: string;
-      referenceNum: string;
     }>;
     parent?: {
+      id?: string;
+      referenceNum?: string;
       name: string;
-      referenceNum: string;
     };
   };
 }

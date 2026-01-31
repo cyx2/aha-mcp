@@ -1,5 +1,8 @@
 import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
 import { GraphQLClient } from "graphql-request";
+
+const AHA_DOMAIN = process.env.AHA_DOMAIN;
+const AHA_API_TOKEN = process.env.AHA_API_TOKEN;
 import {
   FEATURE_REF_REGEX,
   REQUIREMENT_REF_REGEX,
@@ -15,6 +18,7 @@ import {
   getRequirementQuery,
   getPageQuery,
   searchDocumentsQuery,
+  introspectFeatureFieldsQuery,
 } from "./queries.js";
 
 export class Handlers {
@@ -186,6 +190,255 @@ export class Handlers {
       throw new McpError(
         ErrorCode.InternalError,
         `Failed to search documents: ${errorMessage}`
+      );
+    }
+  }
+
+  async handleIntrospectFeature() {
+    try {
+      const data = await this.client.request<any>(introspectFeatureFieldsQuery);
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(data, null, 2),
+          },
+        ],
+      };
+    } catch (error) {
+      if (error instanceof McpError) {
+        throw error;
+      }
+
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      console.error("API Error:", errorMessage);
+      throw new McpError(
+        ErrorCode.InternalError,
+        `Failed to introspect: ${errorMessage}`
+      );
+    }
+  }
+
+  async handleGetRecordRest(request: any) {
+    const { reference } = request.params.arguments as { reference: string };
+
+    if (!reference) {
+      throw new McpError(
+        ErrorCode.InvalidParams,
+        "Reference number is required"
+      );
+    }
+
+    try {
+      const response = await fetch(
+        `https://${AHA_DOMAIN}.aha.io/api/v1/features/${reference}`,
+        {
+          headers: {
+            Authorization: `Bearer ${AHA_API_TOKEN}`,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`REST API error: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(data, null, 2),
+          },
+        ],
+      };
+    } catch (error) {
+      if (error instanceof McpError) {
+        throw error;
+      }
+
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      console.error("API Error:", errorMessage);
+      throw new McpError(
+        ErrorCode.InternalError,
+        `Failed to fetch record via REST: ${errorMessage}`
+      );
+    }
+  }
+
+  async handleUpdateFeature(request: any) {
+    const { reference, fields } = request.params.arguments as {
+      reference: string;
+      fields: { [key: string]: any };
+    };
+
+    if (!reference) {
+      throw new McpError(
+        ErrorCode.InvalidParams,
+        "Reference number is required"
+      );
+    }
+
+    if (!fields || Object.keys(fields).length === 0) {
+      throw new McpError(
+        ErrorCode.InvalidParams,
+        "Fields object is required with at least one field to update"
+      );
+    }
+
+    try {
+      // Separate custom fields from standard fields
+      const customFields: { [key: string]: any } = {};
+      const standardFields: { [key: string]: any } = {};
+
+      // Known standard fields from Aha! API documentation
+      const standardFieldNames = [
+        'name', 'workflow_kind', 'workflow_status', 'release', 'description',
+        'created_by', 'assigned_to_user', 'tags',
+        'initial_estimate_text', 'detailed_estimate_text', 'remaining_estimate_text',
+        'initial_estimate', 'detailed_estimate', 'remaining_estimate',
+        'start_date', 'due_date', 'release_phase', 'initiative', 'epic',
+        'progress_source', 'progress', 'team', 'team_workflow_status',
+        'iteration', 'program_increment'
+      ];
+
+      for (const [key, value] of Object.entries(fields)) {
+        if (standardFieldNames.includes(key)) {
+          standardFields[key] = value;
+        } else {
+          customFields[key] = value;
+        }
+      }
+
+      const payload: { [key: string]: any } = {
+        feature: {
+          ...standardFields,
+        }
+      };
+
+      if (Object.keys(customFields).length > 0) {
+        payload.feature.custom_fields = customFields;
+      }
+
+      const response = await fetch(
+        `https://${AHA_DOMAIN}.aha.io/api/v1/features/${reference}`,
+        {
+          method: 'PUT',
+          headers: {
+            Authorization: `Bearer ${AHA_API_TOKEN}`,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!response.ok) {
+        const errorBody = await response.text();
+        throw new Error(`REST API error: ${response.status} ${response.statusText} - ${errorBody}`);
+      }
+
+      const data = await response.json();
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(data, null, 2),
+          },
+        ],
+      };
+    } catch (error) {
+      if (error instanceof McpError) {
+        throw error;
+      }
+
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      console.error("API Error:", errorMessage);
+      throw new McpError(
+        ErrorCode.InternalError,
+        `Failed to update feature: ${errorMessage}`
+      );
+    }
+  }
+
+  async handleListFeaturesInRelease(request: any) {
+    const { releaseReference, perPage = 100 } = request.params.arguments as {
+      releaseReference: string;
+      perPage?: number;
+    };
+
+    if (!releaseReference) {
+      throw new McpError(
+        ErrorCode.InvalidParams,
+        "Release reference is required (e.g., ACT-R-14 or ACTIVATION-R-14)"
+      );
+    }
+
+    try {
+      const allFeatures: any[] = [];
+      let currentPage = 1;
+      let totalPages = 1;
+
+      // Paginate through all results
+      while (currentPage <= totalPages) {
+        const response = await fetch(
+          `https://${AHA_DOMAIN}.aha.io/api/v1/releases/${releaseReference}/features?page=${currentPage}&per_page=${perPage}`,
+          {
+            headers: {
+              Authorization: `Bearer ${AHA_API_TOKEN}`,
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`REST API error: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        
+        if (data.features) {
+          allFeatures.push(...data.features);
+        }
+
+        if (data.pagination) {
+          totalPages = data.pagination.total_pages || 1;
+        }
+
+        currentPage++;
+      }
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              total_count: allFeatures.length,
+              features: allFeatures,
+            }, null, 2),
+          },
+        ],
+      };
+    } catch (error) {
+      if (error instanceof McpError) {
+        throw error;
+      }
+
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      console.error("API Error:", errorMessage);
+      throw new McpError(
+        ErrorCode.InternalError,
+        `Failed to list features in release: ${errorMessage}`
       );
     }
   }
