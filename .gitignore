@@ -35,3 +35,6 @@ coverage/
 *.swp
 \#*\#
 .\#*
+
+# Custom instructions (local only)
+custom_instructions/

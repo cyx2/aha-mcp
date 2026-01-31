@@ -371,6 +371,36 @@ Returns the updated feature data.
 | `PORT`          | Port for SSE transport                      | 3000     |
 | `TRANSPORT`     | Transport type (stdio or sse)               | stdio    |
 
+## Custom Instructions
+
+You can create a `custom_instructions/` folder in your project root to store instruction files that guide AI agents when reviewing or managing Aha! entries. These files are automatically ignored by git (via `.gitignore`) to keep team-specific or personal workflows private.
+
+### Usage
+
+1. Create the folder:
+   ```bash
+   mkdir custom_instructions
+   ```
+
+2. Add markdown files with your rules and guidelines (e.g., `growth-product-rules.md`, `launch-checklist.md`)
+
+3. Reference these files in your AI conversations to enforce consistent standards when:
+   - Creating or updating feature cards
+   - Validating required fields
+   - Applying team-specific naming conventions
+   - Checking compliance with roadmap criteria
+
+### Example
+
+A `custom_instructions/growth-product-rules.md` file might define:
+- Required field values for experiment vs. GA tickets
+- Title prefixes (e.g., `[Exp]` for experiments)
+- Tag requirements
+- Launch date guidelines
+- Validation checklists
+
+This approach allows each team to maintain their own standards without affecting the shared codebase.
+
 ## Troubleshooting
 
 <details>
