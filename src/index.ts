@@ -157,6 +157,24 @@ class AhaMcp {
           },
         },
         {
+          name: "create_feature",
+          description: "Create a new feature in a release. Uses POST /api/v1/releases/:release_id/features. The feature object is passed directly as the request body under the 'feature' key.",
+          inputSchema: {
+            type: "object",
+            properties: {
+              releaseReference: {
+                type: "string",
+                description: "Release reference number (e.g., MAGENTA-R-9)",
+              },
+              feature: {
+                type: "object",
+                description: "Feature object. Required: name. Optional: workflow_status ({name: '...'}), assigned_to_user ({email: '...'}), description (HTML), due_date (YYYY-MM-DD), start_date, tags, initiative, epic, workflow_kind, etc.",
+              },
+            },
+            required: ["releaseReference", "feature"],
+          },
+        },
+        {
           name: "update_feature",
           description: "Update a feature's fields including custom fields. Custom fields use their API key (e.g., 'go_live_date' for Release target date). Date format: YYYY-MM-DD",
           inputSchema: {
@@ -193,6 +211,20 @@ class AhaMcp {
           },
         },
         {
+          name: "delete_feature",
+          description: "Delete a feature by reference number. Uses DELETE /api/v1/features/:id. Returns 204 on success.",
+          inputSchema: {
+            type: "object",
+            properties: {
+              reference: {
+                type: "string",
+                description: "Feature reference number (e.g., MAGENTA-1)",
+              },
+            },
+            required: ["reference"],
+          },
+        },
+        {
           name: "update_release",
           description: "Update a release's fields. Date format: YYYY-MM-DD",
           inputSchema: {
@@ -226,8 +258,12 @@ class AhaMcp {
         return this.handlers.handleGetRecordRest(request);
       } else if (request.params.name === "list_features_in_release") {
         return this.handlers.handleListFeaturesInRelease(request);
+      } else if (request.params.name === "create_feature") {
+        return this.handlers.handleCreateFeature(request);
       } else if (request.params.name === "update_feature") {
         return this.handlers.handleUpdateFeature(request);
+      } else if (request.params.name === "delete_feature") {
+        return this.handlers.handleDeleteFeature(request);
       } else if (request.params.name === "list_releases") {
         return this.handlers.handleListReleases(request);
       } else if (request.params.name === "update_release") {

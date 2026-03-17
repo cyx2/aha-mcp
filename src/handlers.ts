@@ -272,6 +272,72 @@ export class Handlers {
     }
   }
 
+  async handleCreateFeature(request: any) {
+    const { releaseReference, feature } = request.params.arguments as {
+      releaseReference: string;
+      feature: { [key: string]: any };
+    };
+
+    if (!releaseReference) {
+      throw new McpError(
+        ErrorCode.InvalidParams,
+        "Release reference is required (e.g., MAGENTA-R-9)"
+      );
+    }
+
+    if (!feature || !feature.name) {
+      throw new McpError(
+        ErrorCode.InvalidParams,
+        "Feature object with at least a 'name' field is required"
+      );
+    }
+
+    try {
+      const payload = { feature };
+
+      const response = await fetch(
+        `https://${AHA_DOMAIN}.aha.io/api/v1/releases/${releaseReference}/features`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${AHA_API_TOKEN}`,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!response.ok) {
+        const errorBody = await response.text();
+        throw new Error(`REST API error: ${response.status} ${response.statusText} - ${errorBody}`);
+      }
+
+      const data = await response.json();
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(data, null, 2),
+          },
+        ],
+      };
+    } catch (error) {
+      if (error instanceof McpError) {
+        throw error;
+      }
+
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      console.error("API Error:", errorMessage);
+      throw new McpError(
+        ErrorCode.InternalError,
+        `Failed to create feature: ${errorMessage}`
+      );
+    }
+  }
+
   async handleUpdateFeature(request: any) {
     const { reference, fields } = request.params.arguments as {
       reference: string;
@@ -587,6 +653,57 @@ export class Handlers {
       throw new McpError(
         ErrorCode.InternalError,
         `Failed to list releases: ${errorMessage}`
+      );
+    }
+  }
+
+  async handleDeleteFeature(request: any) {
+    const { reference } = request.params.arguments as { reference: string };
+
+    if (!reference) {
+      throw new McpError(
+        ErrorCode.InvalidParams,
+        "Feature reference number is required (e.g., MAGENTA-1)"
+      );
+    }
+
+    try {
+      const response = await fetch(
+        `https://${AHA_DOMAIN}.aha.io/api/v1/features/${reference}`,
+        {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${AHA_API_TOKEN}`,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorBody = await response.text();
+        throw new Error(`REST API error: ${response.status} ${response.statusText} - ${errorBody}`);
+      }
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({ message: `Feature ${reference} deleted successfully` }),
+          },
+        ],
+      };
+    } catch (error) {
+      if (error instanceof McpError) {
+        throw error;
+      }
+
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      console.error("API Error:", errorMessage);
+      throw new McpError(
+        ErrorCode.InternalError,
+        `Failed to delete feature: ${errorMessage}`
       );
     }
   }
